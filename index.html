@@ -1,1 +1,155 @@
-My GitHub Page
+<!DOCTYPE html>
+<!--[if lt IE 7 ]> <html class="ie6"> <![endif]-->
+<!--[if IE 7 ]> <html class="ie7"> <![endif]-->
+<!--[if IE 8 ]> <html class="ie8"> <![endif]-->
+<!--[if IE 9 ]> <html class="ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!--> <html> <!--<![endif]-->
+<head>
+<meta charset="UTF-8">
+<title>豆瓣抽</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0">
+<link href="css/main.css" rel="stylesheet" />
+</head>
+<body>
+<div id="header">
+    <fieldset>
+        <legend></legend>
+        <!--<p>-->
+            <!--<label>签到才能抽奖！<input type="text" id="checkinInput" placeholder="填写你的称呼"></label>-->
+            <!--<span class="bn-flat"><input type="button" class="checkin-btn" value="签到"></span>-->
+        <!--</p>-->
+        <div id="pickbox">
+        </div>
+    </fieldset>
+</div>
+<div id="main">
+    <div id="toolbar">
+        <span class="bn-flat"><input type="button" value="新奖项" class="new-btn"></span>
+        <span class="bn-flat"><input type="button" value="洗牌" class="shuffle-btn"></span>
+        <span class="bn-flat"><input type="button" value="翻面" class="turnover-btn"></span>
+        <span class="bn-flat"><input type="button" value="当前获奖名单" class="show-btn"></span>
+        <span class="bn-flat"><input type="button" value="导出数据" class="export-btn"></span>
+        <span class="bn-flat"><input type="button" value="重置" class="reset-btn"></span>
+        <div id="pickcount">已抽出：<strong>0</strong></div>
+    </div>
+    <!--<canvas id="luckybox" width="750" height="500"></canvas>-->
+    <div id="luckybox"><strong class="loading">加载中...</strong></div>
+</div>
+<script type="text/template" id="tplExport">
+<textarea class="export-list">
+{% for (var name in lists) { %}
+{%=name%}
+------------------
+{%=(lists[name].map(function(row){ return row.name; }).join('&nbsp;&nbsp;'))%}
+{% } %}
+</textarea>
+</script>
+
+<script src="js/lib/oz.js"></script>
+<script>
+oz.def("jquery-src", "js/lib/jquery_src.js");
+oz.def("jquery-mousewheel", "js/lib/jquery.mousewheel.js");
+oz.def("jquery", "js/lib/jquery.js");
+oz.def("lang", "js/mod/lang.js");
+oz.def("browsers", "js/mod/browsers.js");
+oz.def("event", "js/mod/event.js");
+oz.def("template", "js/mod/template.js");
+oz.def("easing", "js/mod/easing.js");
+oz.def("mainloop", "js/mod/mainloop.js");
+oz.def("uiproxy", "js/mod/uiproxy.js");
+oz.def("domready", "js/mod/domready.js");
+oz.def("IDBStore", "js/mod/IDBStore.js");
+oz.def("drag", "js/mod/drag.js");
+oz.def("scrollbar", "js/mod/scrollbar.js");
+oz.def("dialog", "js/mod/dialog.js");
+oz.def("luckybox", "js/luckybox.js");
+require(["jquery", "lang", "uiproxy", "template", "luckybox", "domready"], function($, _, uiproxy, tpl, app){
+    var data = '暗绿背鸬鹚,暗绿绣眼鸟,八哥,八声杜鹃,白斑军舰鸟,白背兀鹫,白点翅拟蜡雀,白耳画眉,白腹海雕,白腹金丝燕,白腹军舰鸟,白腹鹭,白腹鹞,白冠燕尾,白肩雕,白脸鹭,白领翡翠,白眉歌鸫,白琵鹭,白鹈鹕,白头鹤,白头鹞,白尾海雕,白尾鹞,白兀鹫,白腰文鸟,百灵,斑鸫,斑皇鸠,斑姬地鸠,斑鹭,斑文鸟,斑胸鸦雀,斑嘴企鹅,斑嘴鹈鹕,宝兴歌鸫,北极雀,北椋鸟,布氏柳莺,彩虹鹦鹉,苍鹭,苍鹰,草鹭,草原雕,草原鹞,叉尾鸥,长尾雀,长尾山雀,长尾鹦鹉,池鹭,赤翡翠,赤腹鹰,赤红山椒鸟,大白鹭,大杜鹃,大绯胸鹦鹉,大麻开鸟,大麻鹭,大嗓鹛,大山雀,大苇莺,大贼鸥,戴菊,丹顶鹤,岛鸫,豆雁,短趾雕,粉红椋鸟,凤头百灵,凤头蜂鹰,凤头鹰,高山兀鹫,高山雨燕,冠羽画眉,光背地鸫,海鸬鹚,海鸥,和平鸟,河乌,褐耳鹰,鹤头莺,黑背燕尾,黑翅鸢,黑颈鸬鹚,黑卷尾,黑脸琵鹭,黑兀鹫,黑胸织雀,红腹灰雀,红颈绿鸠,红脸鸬鹚,红眉金翅雀,红眉松雀,红眉朱雀,红梅花雀,红头灰雀,红头山雀,红尾伯劳,红胁绣眼鸟,红嘴相思鸟,胡兀鹫,虎皮鹦鹉,虎头海雕,虎纹伯劳,花脸鸭,画眉,黄斑苇开鸟,黄眉柳莺,黄雀,黄苇鹭,黄胸织布鸟,黄腰柳莺,黄嘴白鹭,灰斑鸠,灰背岸八哥,灰伯劳,灰腹杜鹃,灰卷尾,灰头鸦雀,灰头莺,灰文鸟,灰喜鹊,灰雁,火斑鸠,火鸡,火尾太阳鸟,极北柳莺,家燕,剪嘴鸥,金背鸠,金翅雀,金雕,金黄鹂,金山珍珠,金丝雀,金丝燕,金枕黑雀,酒红朱雀,卷羽鹈鹕,军用金刚鹦鹉,葵花鹦鹉,蓝短翅鸠,蓝翡翠,蓝鹤,蓝颊蜂虎,蓝枕花蜜鸟,勒山雀,雷鸟,里海地鸦,丽色奇鹛,栗鸢,林雕,琉璃金刚鹦鹉,琉球歌鸠,芦莺,路德雀鹛,绿背山雀,绿画眉,绿孔雀,绿鹭,绿啄木鸟,麻雀,马来皇鸠,矛斑蝗莺,梅花雀,煤山雀,美洲鹤,牡丹鹦鹉,目黑,尼柯巴鸠,牛背鹭,牛头伯劳,欧亚鸠,鸥歌鸫,盘尾树鹊,普通鸬鹚,普通潜鸟,七彩文鸟,雀鹰,鹊鹞,日本歌鸠,日本松鹊鹰,山麻雀,山鹛,蛇雕,树鹊,四声杜鹃,松雀,松鹊鹰,台湾紫啸鸫,太平鸟,天鹅,田鸫,鸵鸟,文须雀,乌雕,乌鸫,乌灰鹞,五彩文鸟,西伯利亚山雀,西南栗耳凤鹛,喜鹊,喜山金背啄木鸟,小斑啄木鸟,小金背啄木鸟,小军舰鸟,小葵花凤头鹦鹉,小绿鸠,小太平鸟,小燕尾,须苇莺,血雀,亚历山大鹦鹉,烟黑叉尾海燕,岩鹭,燕雀,夜鹭,银鸽,银喉长尾雀,银鸥,印度鸬鹚,鹦鹉,鹰雕,渔雕,玉带海雕,玉山雀鹛,鸳鸯,云雀,沼泽山雀,中白鹭,朱背啄花鸟,朱顶雀,朱雀,侏鸬鹚,主红雀,爪哇斑鸠,爪哇池鹭,啄木鸟,紫背苇鹭,棕背伯劳,棕翅歌百灵,棕头绿鸠,棕头鸦雀,棕夜鹭,棕朱雀'.split(',').map(function(name){
+        return { name: name };
+    });
+    app.init({
+        defaultDB: data
+    }).then(function(){
+        app.shuffle();
+    });
+    var reward = 'Rewards';
+    var count = 0;
+    var pickbox = $('#pickbox');
+    var pickcount = $("#pickcount strong");
+    uiproxy.add(document.body, 'click', {
+        ".shuffle-btn": function(){
+            app.shuffle();
+        },
+        ".turnover-btn": function(){
+            app.turnover();
+        },
+        ".new-btn": function(){
+            app.alert('<input type="text" id="rewardName" value="" placeholder="奖项名称" />', function(){
+                pickbox[0].innerHTML = '';
+                count = 0;
+                pickcount[0].innerHTML = count;
+                reward = $('#rewardName')[0].value;
+            }, {
+                title: '请输入奖项名称'
+            });
+        },
+        ".show-btn": function(){
+            var list = [];
+            pickbox.find('a').each(function(){
+                list.push(this.innerHTML);
+            });
+            app.alert('<div class="rewardbox">' + list.join('') + '</div>', false, {
+                hideButton: true,
+                title: reward
+            });
+        },
+        ".export-btn": function(){
+            app.export(function(lists){
+                app.alert(tpl.convertTpl('tplExport', { lists: lists }), {
+                    title: '导出数据'
+                });
+            });
+        },
+        ".reset-btn": function(){
+            app.clear().then(function(){
+                location.reload();
+            });
+            /*
+            pickbox[0].innerHTML = '';
+            reward = 'Rewards';
+            count = 0;
+            pickcount[0].innerHTML = count;
+            */
+        },
+        ".card": function(){
+            if (this.nodeName !== "A") {
+                return arguments.callee.call(this.parentNode);
+            }
+            if (count >= 10) {
+                app.alert('每批获奖者最多10个～');
+                return;
+            }
+            var me = $(this);
+            var cid = (/#uid=(\d+)/.exec(me.attr("href")) || [])[1];
+            if (cid) {
+                if (me.data('reward')) {
+                    app.unpick(cid);
+                    me.remove();
+                    pickcount[0].innerHTML = --count;
+                } else {
+                    app.pick(cid, reward);
+                    var pos = me.offset();
+                    var newpos = me.css('visibility', 'hidden').appendTo(pickbox).offset();
+                    me.clone().appendTo('body').css(pos).css('visibility', 'visible').animate(newpos, 500, 'easeInOutQuad', function(){
+                        $(this).remove();
+                        me.css('visibility', 'visible').data('reward', reward);
+                    });
+                    pickcount[0].innerHTML = ++count;
+                }
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>
