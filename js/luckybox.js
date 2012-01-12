@@ -58,6 +58,10 @@ define("luckybox", [
                     isTrueShadow: true,
                     buttons: []
                 });
+                if ('webkitIndexedDB' in window) {
+                    this.alert('Chrome的IndexedDB实现烂的像渣一样暂不予支持！');
+                    return;
+                }
                 this.db = new IDBStore({
                     dbName: 'appdb',
                     storeName: 'Visitors',
