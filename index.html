@@ -68,6 +68,7 @@ require(["jquery", "lang", "uiproxy", "template", "luckybox", "domready"], funct
         return { name: name };
     });
     app.init({
+        canvas: $('#luckybox'),
         defaultDB: data
     }).then(function(){
         app.shuffle();

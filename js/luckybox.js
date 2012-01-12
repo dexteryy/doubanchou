@@ -1,12 +1,13 @@
 
 define("luckybox", [
     "lang",
+    "host",
     "browsers",
     "event",
     "template",
     "IDBStore",
     "dialog"
-], function(_, browsers, Event, tpl, IDBStore, Dialog){
+], function(_, host, browsers, Event, tpl, IDBStore, Dialog){
 
     var M = Math,
         BOX_W = 750,
@@ -58,8 +59,12 @@ define("luckybox", [
                     isTrueShadow: true,
                     buttons: []
                 });
-                if ('webkitIndexedDB' in window) {
+                if (host.webkitIndexedDB) {
                     this.alert('Chrome的IndexedDB实现烂的像渣一样暂不予支持！');
+                    return;
+                }
+                if (!host.mozIndexedDB && !host.indexedDB) {
+                    this.alert('本程序是企业内部应用！只支持Firefox！');
                     return;
                 }
                 this.db = new IDBStore({
@@ -90,7 +95,7 @@ define("luckybox", [
                         }
                     } 
                 });
-                var canvas = this.canvas = $("#luckybox");
+                var canvas = this.canvas = opt.canvas;
                 canvas.mousemove(function(e){
                     if (e.target.className == "card" && e.target.nodeName === "A") {
                         canvas[0].appendChild(e.target);
@@ -131,7 +136,7 @@ define("luckybox", [
                     y: pos[1],
                     rotate: angle 
                 };
-                return $(tpl.format(TPL_CARD, tplData)).appendTo(this.canvas);
+                this.canvas.append(tpl.format(TPL_CARD, tplData));
             },
 
             shuffle: function(){
