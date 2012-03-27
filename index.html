@@ -48,8 +48,8 @@
 <script src="js/lib/oz.js"></script>
 <script>
 oz.def("jquery-src", "js/lib/jquery_src.js");
+oz.def("jquery", ["jquery-src"], "js/lib/jquery.js");
 oz.def("jquery-mousewheel", "js/lib/jquery.mousewheel.js");
-oz.def("jquery", "js/lib/jquery.js");
 oz.def("lang", "js/mod/lang.js");
 oz.def("browsers", "js/mod/browsers.js");
 oz.def("event", "js/mod/event.js");
@@ -131,7 +131,7 @@ require(["jquery", "lang", "uiproxy", "template", "luckybox", "domready"], funct
                 return;
             }
             var me = $(this);
-            var cid = (/#uid=(\d+)/.exec(me.attr("href")) || [])[1];
+            var cid = (/#uid=(\w+)/.exec(me.attr("href")) || [])[1];
             if (cid) {
                 if (me.data('reward')) {
                     app.unpick(cid);

@@ -59,42 +59,39 @@ define("luckybox", [
                     isTrueShadow: true,
                     buttons: []
                 });
-                if (host.webkitIndexedDB) {
-                    this.alert('Chrome的IndexedDB实现烂的像渣一样暂不予支持！');
+                try {
+                    this.db = new IDBStore({
+                        dbName: 'appdb',
+                        storeName: 'Visitors',
+                        keyPath: 'uid',
+                        autoIncrement: true,
+                        onStoreReady: function(){
+                            if (opt.defaultDB) {
+                                self.db.getAll().then(function(rows){
+                                    if (opt.reset || !rows.length) {
+                                        self.event.reject('checkdb');
+                                    } else {
+                                        self.event.fire('init');
+                                    }
+                                    return self.event.promise('checkdb');
+                                }).follow().fail(function(){
+                                    return self.db.clear();
+                                }).follow().then(function(){
+                                    var fn = arguments.callee,
+                                        obj = opt.defaultDB.pop();
+                                    if (obj) {
+                                        self.db.put(obj, fn);
+                                    } else {
+                                        self.event.fire('init');
+                                    }
+                                });
+                            }
+                        } 
+                    });
+                } catch (ex) {
+                    this.alert('你的浏览器不支持IndexedDB！去死罢！');
                     return;
                 }
-                if (!host.mozIndexedDB && !host.indexedDB) {
-                    this.alert('本程序是企业内部应用！只支持Firefox！');
-                    return;
-                }
-                this.db = new IDBStore({
-                    dbName: 'appdb',
-                    storeName: 'Visitors',
-                    keyPath: 'uid',
-                    autoIncrement: true,
-                    onStoreReady: function(){
-                        if (opt.defaultDB) {
-                            self.db.getAll().then(function(rows){
-                                if (opt.reset || !rows.length) {
-                                    self.event.reject('checkdb');
-                                } else {
-                                    self.event.fire('init');
-                                }
-                                return self.event.promise('checkdb');
-                            }).follow().fail(function(){
-                                return self.db.clear();
-                            }).follow().then(function(){
-                                var fn = arguments.callee,
-                                    obj = opt.defaultDB.pop();
-                                if (obj) {
-                                    self.db.put(obj, fn);
-                                } else {
-                                    self.event.fire('init');
-                                }
-                            });
-                        }
-                    } 
-                });
                 var canvas = this.canvas = opt.canvas;
                 canvas.mousemove(function(e){
                     if (e.target.className == "card" && e.target.nodeName === "A") {

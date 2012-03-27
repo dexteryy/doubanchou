@@ -6,7 +6,7 @@
 oz.def('jquery', ['easing', 'finish', 'jquery-src'], function(elib, finish){
     var $ = jQuery;
     $.easing['jswing'] = $.easing['swing'];
-    $.extend($.easing, elib);
+    $.extend($.easing, elib.functions);
     oz.require(["jquery-mousewheel"], function(){
         finish($);
     });
