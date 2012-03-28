@@ -10,7 +10,7 @@ define("luckybox", [
 ], function(_, host, browsers, Event, tpl, IDBStore, Dialog){
 
     var M = Math,
-        BOX_W = 750,
+        BOX_W = 740,
         BOX_H = 400,
         CARD_WIDTH = 100,
         CARD_HEIGHT = 40,
@@ -32,7 +32,7 @@ define("luckybox", [
         TPL_CARD = '<a href="#uid={{uid}}" class="card"'
                 + 'style="left:{{x}}px;top:{{y}}px;' 
                 + 'width:{{w}}px;height:{{h}}px;line-height:{{h}}px;'
-                + TRANSFORM_ORIGIN_STYLE + ':left top;' 
+                + TRANSFORM_ORIGIN_STYLE + ':50% 50%;' 
                 + TRANSFORM_STYLE + ':rotate({{rotate}}deg);"><span class="card">{{title}}</span></a>',
 
         random_opt = {
@@ -45,11 +45,14 @@ define("luckybox", [
 
         uuid = 1,
 
+        teamLib = {},
+
         luckybox = {
 
             init: function(opt){
                 var self = this;
                 this.event = Event();
+                this.round = 0;
                 this.dialog = Dialog({
                     titile: "",
                     content: "",
@@ -71,6 +74,9 @@ define("luckybox", [
                                     if (opt.reset || !rows.length) {
                                         self.event.reject('checkdb');
                                     } else {
+                                        rows.forEach(function(obj){
+                                            this.setTeam(obj);
+                                        }, self);
                                         self.event.fire('init');
                                     }
                                     return self.event.promise('checkdb');
@@ -81,6 +87,7 @@ define("luckybox", [
                                         obj = opt.defaultDB.pop();
                                     if (obj) {
                                         self.db.put(obj, fn);
+                                        self.setTeam(obj);
                                     } else {
                                         self.event.fire('init');
                                     }
@@ -102,6 +109,58 @@ define("luckybox", [
                 return this.event.promise('init');
             },
 
+            setTeam: function(obj){
+                if (obj._team) {
+                    var team = teamLib[obj._team];
+                    if (!team) {
+                        team = teamLib[obj._team] = { 
+                            name: obj._team, 
+                            members: [], 
+                            dict: {},
+                            rounds: {},
+                            count: 0
+                        };
+                    }
+                    if (obj.uid) {
+                        if (!team.dict[obj.uid]) {
+                            team.members.push(obj);
+                            team.dict[obj.uid] = obj;
+                            team.rounds[obj._round] = obj;
+                            if (obj._round > this.round) {
+                                this.round = obj._round;
+                            }
+                            team.count++;
+                        } else {
+                            _.mix(team.dict[obj.uid], obj);
+                        }
+                    }
+                } else if (obj._ex_team){
+                    var ex_team = teamLib[obj._ex_team];
+                    delete ex_team.dict[obj.uid];
+                    delete ex_team.rounds[obj._round];
+                    var index = -1;
+                    ex_team.members.forEach(function(p, i){
+                        if (p.uid == obj.uid) {
+                            index = i;
+                        }
+                    });
+                    if (index > 0) {
+                        ex_team.members.splice(index, 1);
+                    }
+                    ex_team.count--;
+                }
+            },
+
+            getTeam: function(name){
+                return teamLib[name];
+            },
+
+            getTeams: function(){
+                return Object.keys(teamLib).map(function(name){
+                    return this[name];
+                }, teamLib);
+            },
+
             clear: function(){
                 var self = this;
                 return self.db.clear(function(){
@@ -120,11 +179,11 @@ define("luckybox", [
                 //this.draw(data);
             //},
 
-            draw: function(data){
-                if (!data || !data.name || data.reward) {
+            draw: function(data, opt){
+                if (!data || !data.name || data._team) {
                     return;
                 }
-                var pos = positionRandom(random_opt);
+                var pos = opt && opt.pos || positionRandom(random_opt);
                 var angle = 30 * M.random() - 15;
                 var tplData = {
                     uid: data.uid,
@@ -133,7 +192,7 @@ define("luckybox", [
                     y: pos[1],
                     rotate: angle 
                 };
-                this.canvas.append(tpl.format(TPL_CARD, tplData));
+                return $(tpl.format(TPL_CARD, tplData)).appendTo(this.canvas);
             },
 
             shuffle: function(){
@@ -176,40 +235,52 @@ define("luckybox", [
                     }
                 }
                 dlg.set({
+                    isHideTitle: opt.isHideTitle || false,
                     title: opt.title || "提示",
                     content: '<div class="alert-dlg">' + msg + '</div>',
-                    width: 700,
+                    width: opt.width || 400,
                     buttons: buttons
                 }).open();
             },
 
-            pick: function(uid, reward){
+            pick: function(uid, chosen, cb){
                 var self = this;
                 this.db.get(uid, function(data){
-                    data.reward = reward;
+                    data._team = chosen;
+                    data._round = ++self.round;
                     self.db.put(data);
+                    self.setTeam(data);
+                    if (cb) {
+                        cb(data);
+                    }
                 });
             },
 
-            unpick: function(uid){
+            unpick: function(uid, cb){
                 var self = this;
                 this.db.get(uid, function(data){
-                    delete data.reward;
+                    data._ex_team = data._team;
+                    delete data._team;
+                    self.setTeam(data);
+                    delete data._ex_team;
                     self.db.put(data);
                     self.draw(data);
+                    if (cb) {
+                        cb(data);
+                    }
                 });
             },
 
-            export: function(cb){
+            exportData: function(cb){
                 this.db.getAll(function(rows){
                     var lists = {};
                     rows.forEach(function(data){
-                        var reward = data.reward;
-                        if (reward) {
-                            if (!lists[reward]) {
-                                lists[reward] = [];
+                        var chosen = data._team;
+                        if (chosen) {
+                            if (!lists[chosen]) {
+                                lists[chosen] = [];
                             }
-                            lists[reward].push(data);
+                            lists[chosen].push(data);
                         }
                     }, this);
                     cb(lists);
