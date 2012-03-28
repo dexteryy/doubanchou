@@ -64,7 +64,7 @@ define("luckybox", [
                 });
                 try {
                     this.db = new IDBStore({
-                        dbName: 'appdb',
+                        dbName: 'appdb2',
                         storeName: 'Visitors',
                         keyPath: 'uid',
                         autoIncrement: true,

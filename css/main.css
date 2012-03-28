@@ -27,6 +27,7 @@ input{font:12px/20px "Helvetica Neue",Helvetica,Arial,sans-serif;vertical-align:
 #wrapper{width:1000px;margin:0 auto;}
 #main{width:740px;float:left;}
 #aside{width:250px;float:right;z-index:1;position:relative;}
+#aside .licence a{text-decoration:underline;color:#333;}
 #teamlist{padding:20px 20px;margin:10px auto;text-align:left;border:1px dashed #fff;background:#eee}
 #teamlist li{position:relative;background:#fff;padding:10px;font-size:14px;box-shadow:1px 1px 4px #ccc;margin:0px 0;color:#000;}
 #teamlist li.chosen{z-index:1;font-weight:bold;cursor:pointer;-moz-transform:scale(1.1);-webkit-transform:scale(1.1);-ms-transform:scale(1.1); }
