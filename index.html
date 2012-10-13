@@ -87,7 +87,7 @@
 {% for (var i = 1; i <= round; i++) { %}
     {% if (teams.length !== 1 || teams[0].rounds[i]) { %}
 <tr>
-    <td style="width:60px">第{%=i%}轮</td>
+    <td style="width:60px">{%=(i <= teams.length ? '准备阶段' : '第' + Math.floor((i - 1)/teams.length) + '轮')%}</td>
     {% teams.forEach(function(team){ %}
         <td>{%=((team.rounds[i] || {}).name || '')%}</td>
     {% }); %}
@@ -104,26 +104,6 @@
 </table>
 </script>
 
-<script src="js/oz/oz.js"></script>
-<script>
-oz.def("jquery-src", "js/oz/lib/jquery_src.js");
-oz.def("jquery", ["jquery-src"], "js/oz/lib/jquery.js");
-oz.def("jquery-mousewheel", "js/oz/lib/jquery.mousewheel.js");
-oz.def("lang", "js/oz/mod/lang.js");
-oz.def("browsers", "js/oz/mod/browsers.js");
-oz.def("event", "js/oz/mod/event.js");
-oz.def("template", "js/oz/mod/template.js");
-oz.def("easing", "js/oz/mod/easing.js");
-oz.def("mainloop", "js/oz/mod/mainloop.js");
-oz.def("uiproxy", "js/oz/mod/uiproxy.js");
-oz.def("domready", "js/oz/mod/domready.js");
-oz.def("IDBStore", "js/oz/mod/IDBStore.js");
-oz.def("drag", "js/oz/mod/drag.js");
-oz.def("scrollbar", "js/oz/mod/scrollbar.js");
-oz.def("dialog", "js/oz/mod/dialog.js");
-oz.def("data/draft.json");
-oz.def("luckybox", "js/luckybox.js");
-</script>
-<script src="js/main.js"></script>
+<script src="dist/js/main.js"></script>
 </body>
 </html>

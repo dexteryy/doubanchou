@@ -1,5 +1,28 @@
+require.config({
+    baseUrl: 'js/',
+    distUrl: 'dist/js/'
+});
 
-require(["jquery", "lang", "uiproxy", "template", "luckybox", "data/draft.json", "domready"], function($, _, uiproxy, tpl, app, json){
+define("jquery-src", "lib/jquery.js");
+define("lib/jquery.mousewheel", ["jquery-src"]);
+define("lib/jquery", ["mod/easing", "jquery-src", "lib/jquery.mousewheel"], function(elib){
+    var $ = jQuery;
+    $.easing['jswing'] = $.easing['swing'];
+    $.extend($.easing, elib.functions);
+    return $;
+});
+
+define("data/draft", "../data/draft.json");
+
+require([
+    "lib/jquery", 
+    "mod/lang", 
+    "mod/uiproxy", 
+    "mod/template", 
+    "luckybox", 
+    "data/draft", 
+    "mod/domready"
+], function($, _, uiproxy, tpl, app, json){
 
     var data = json.list.map(function(str){
         var info = {};
