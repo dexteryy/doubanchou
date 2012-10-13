@@ -1,0 +1,26 @@
+repos:
+  ozjs:
+    url: https://github.com/dexteryy/OzJS.git
+    file:
+      /oz.js: /js/lib/
+      /lib/jquery.mousewheel.js: /js/lib/
+      /mod/lang.js: /js/mod/
+      /mod/browsers.js: /js/mod/
+      /mod/event.js: /js/mod/
+      /mod/template.js: /js/mod/
+      /mod/network.js: /js/mod/
+      /mod/domready.js: /js/mod/
+      /mod/dialog.js: /js/mod/
+      /mod/uiproxy.js: /js/mod/
+      /mod/easing.js: /js/mod/
+  db:
+    url: https://github.com/dexteryy/db.js
+    file:
+      /src/db.js: /js/mod/
+  jquery:
+    url: https://github.com/jquery/jquery.git
+    build_cmd:
+      - grunt custom:-ajax
+    file:
+      /dist/jquery.js: /js/lib/
+
